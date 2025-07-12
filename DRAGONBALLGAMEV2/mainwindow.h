@@ -22,7 +22,6 @@ private:
     QGraphicsScene *scene;
     QGraphicsTextItem *text;
     QGraphicsTextItem *text2;
-    QGraphicsTextItem *titulo;
 };
 
 #endif // MAINWINDOW_H
