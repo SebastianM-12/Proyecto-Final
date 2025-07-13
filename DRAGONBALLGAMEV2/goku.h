@@ -1,17 +1,23 @@
 #ifndef GOKU_H
 #define GOKU_H
 
-#include <QMainWindow>
 #include <QObject>
-#include <QWidget>
+#include <QGraphicsPixmapItem>
+#include <QKeyEvent>
+#include <QPixmap>
 
-class goku : public QObject
+class Goku : public QObject, public QGraphicsPixmapItem
 {
     Q_OBJECT
 public:
-    explicit goku(QObject *parent = nullptr);
+    Goku();
 
-signals:
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+
+private:
+    QPixmap spriteSheet;
+    void actualizarSprite(int tipo);
 };
 
 #endif // GOKU_H

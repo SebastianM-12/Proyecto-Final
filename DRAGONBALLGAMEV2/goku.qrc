@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>build/Desktop_Qt_6_8_2_MinGW_64_bit-Debug/debug/picture/goku.png</file>
+    </qresource>
+</RCC>

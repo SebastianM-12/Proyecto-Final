@@ -1,6 +1,5 @@
 #include "nivel1.h"
-#include <QGraphicsPixmapItem>
-#include <QPixmap>
+#include "goku.h"
 
 Nivel1::Nivel1(int width, int height, QObject* parent)
     : QGraphicsScene(parent)
@@ -13,4 +12,10 @@ Nivel1::Nivel1(int width, int height, QObject* parent)
     QGraphicsPixmapItem* fondoItem = addPixmap(fondoEscalado);
     fondoItem->setZValue(-1);
     fondoItem->setPos(0, 0);
+
+    // AGREGAR GOKU
+    Goku* goku = new Goku();
+    addItem(goku);
+    goku->setFlag(QGraphicsItem::ItemIsFocusable);
+    goku->setFocus();  // Para que reciba eventos de teclado
 }
