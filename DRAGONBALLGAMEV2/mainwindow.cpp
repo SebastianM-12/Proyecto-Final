@@ -5,7 +5,7 @@
 #include <QPixmap>
 #include <QApplication>
 #include <QScreen>
-#include <QFontMetrics>
+#include <QPushButton>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -13,41 +13,61 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    // Obtener tamaño de pantalla
     QRect screenSize = QGuiApplication::primaryScreen()->geometry();
     int screenWidth = screenSize.width();
     int screenHeight = screenSize.height();
 
+    // Crear escena y asignarla
     scene = new QGraphicsScene();
     scene->setSceneRect(0, 0, screenWidth, screenHeight);
     ui->graphicsView->setScene(scene);
 
-    QPixmap fondo("C:/Users/Sebastian/Pictures/dragon ball imagenes/menu.jpg");  // usa ruta relativa si puedes
+    // Fondo de menú
+    QPixmap fondo("C:/Users/Sebastian/Pictures/dragon ball imagenes/menu.jpg");
     QPixmap fondoEscalado = fondo.scaled(screenWidth, screenHeight, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
     QGraphicsPixmapItem* fondoItem = scene->addPixmap(fondoEscalado);
     fondoItem->setZValue(-1);
     fondoItem->setPos(0, 0);
 
-    QFont fuenteBoton("Arial", 48, QFont::Bold);
-    QFontMetrics fm(fuenteBoton);
+    // --- BOTONES CON ESTILO ---
+    int btnAncho = 200;
+    int btnAlto = 50;
+    int spacing = 60;
 
-    text = scene->addText("Jugar");
-    text->setFont(fuenteBoton);
-    text->setDefaultTextColor(Qt::white);
+    QPushButton* btnJugar = new QPushButton("JUGAR", this);
+    QPushButton* btnSalir = new QPushButton("SALIR", this);
 
-    text2 = scene->addText("Salir");
-    text2->setFont(fuenteBoton);
-    text2->setDefaultTextColor(Qt::white);
+    // Estilo
+    QString estilo = "QPushButton {"
+                     "background-color: rgba(255, 255, 255, 180);"
+                     "color: black;"
+                     "font: bold 20px 'Arial';"
+                     "border: 2px solid black;"
+                     "}"
+                     "QPushButton:hover {"
+                     "background-color: rgba(0, 0, 0, 150);"
+                     "color: white;"
+                     "}";
 
-    int textWidth1 = fm.horizontalAdvance("Jugar");
-    int textWidth2 = fm.horizontalAdvance("Salir");
-    int spacing = 100;
-    int totalWidth = textWidth1 + spacing + textWidth2;
+    btnJugar->setStyleSheet(estilo);
+    btnSalir->setStyleSheet(estilo);
+
+    btnJugar->resize(btnAncho, btnAlto);
+    btnSalir->resize(btnAncho, btnAlto);
+
+    // Posicionarlos horizontalmente y centrarlos
+    int totalWidth = btnAncho * 2 + spacing;
     int startX = (screenWidth - totalWidth) / 2;
     int y = screenHeight * 0.85;
 
-    text->setPos(startX, y);
-    text2->setPos(startX + textWidth1 + spacing, y);
+    btnJugar->move(startX, y);
+    btnSalir->move(startX + btnAncho + spacing, y);
 
+    // Conectar botón salir
+    connect(btnSalir, &QPushButton::clicked, this, &MainWindow::close);
+
+    // Pantalla completa
     this->showFullScreen();
 }
 
