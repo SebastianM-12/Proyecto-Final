@@ -3,7 +3,8 @@
 
 #include <QMainWindow>
 #include <QGraphicsScene>
-#include <QGraphicsTextItem>
+#include <QPushButton>
+#include "nivel1.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -17,11 +18,16 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void iniciarJuego();
+
 private:
     Ui::MainWindow *ui;
-    QGraphicsScene *scene;
-    QGraphicsTextItem *text;
-    QGraphicsTextItem *text2;
+    QGraphicsScene* scene;
+    Nivel1* escenaNivel1;
+
+    QPushButton* btnJugar;
+    QPushButton* btnSalir;
 };
 
 #endif // MAINWINDOW_H

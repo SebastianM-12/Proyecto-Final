@@ -5,7 +5,6 @@
 #include <QPixmap>
 #include <QApplication>
 #include <QScreen>
-#include <QPushButton>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -35,8 +34,8 @@ MainWindow::MainWindow(QWidget *parent)
     int btnAlto = 50;
     int spacing = 60;
 
-    QPushButton* btnJugar = new QPushButton("JUGAR", this);
-    QPushButton* btnSalir = new QPushButton("SALIR", this);
+    btnJugar = new QPushButton("JUGAR", this);
+    btnSalir = new QPushButton("SALIR", this);
 
     // Estilo
     QString estilo = "QPushButton {"
@@ -64,8 +63,9 @@ MainWindow::MainWindow(QWidget *parent)
     btnJugar->move(startX, y);
     btnSalir->move(startX + btnAncho + spacing, y);
 
-    // Conectar botón salir
+    // Conectar botones
     connect(btnSalir, &QPushButton::clicked, this, &MainWindow::close);
+    connect(btnJugar, &QPushButton::clicked, this, &MainWindow::iniciarJuego);
 
     // Pantalla completa
     this->showFullScreen();
@@ -75,3 +75,23 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::iniciarJuego()
+{
+    // Ocultar los botones del menú
+    btnJugar->hide();
+    btnSalir->hide();
+
+    // Eliminar la escena del menú
+    delete scene;
+
+    // Obtener tamaño de pantalla
+    QRect screenSize = QGuiApplication::primaryScreen()->geometry();
+    int width = screenSize.width();
+    int height = screenSize.height();
+
+    // Crear nivel1 y mostrarlo
+    escenaNivel1 = new Nivel1(width, height);
+    ui->graphicsView->setScene(escenaNivel1);
+}
+
