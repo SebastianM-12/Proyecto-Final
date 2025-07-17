@@ -1,3 +1,7 @@
 <RCC>
-    <qresource prefix="/"/>
+    <qresource prefix="/">
+        <file>../../../../../../../Pictures/sprites/nueva resolucion/chaoz.png</file>
+        <file>../../../../../../../Pictures/sprites/nueva resolucion/goku.png</file>
+        <file>../../../../../../../Pictures/sprites/nueva resolucion/ten.png</file>
+    </qresource>
 </RCC>

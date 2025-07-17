@@ -1,35 +1,44 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
 #include <QGraphicsPixmapItem>
 #include <QPixmap>
-#include <QApplication>
 #include <QScreen>
+#include <QGuiApplication>
+#include <QDebug>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , escenaMenu(nullptr)
+    , escenaJuego(nullptr)
+    , btnJugar(nullptr)
+    , btnSalir(nullptr)
 {
     ui->setupUi(this);
+    configurarMenu();
+}
 
-    // Obtener tamaño de pantalla
+void MainWindow::configurarMenu()
+{
     QRect screenSize = QGuiApplication::primaryScreen()->geometry();
     int screenWidth = screenSize.width();
     int screenHeight = screenSize.height();
 
-    // Crear escena y asignarla
-    scene = new QGraphicsScene();
-    scene->setSceneRect(0, 0, screenWidth, screenHeight);
-    ui->graphicsView->setScene(scene);
+    escenaMenu = new QGraphicsScene(this);
+    escenaMenu->setSceneRect(0, 0, screenWidth, screenHeight);
+    ui->graphicsView->setScene(escenaMenu);
 
-    // Fondo de menú
     QPixmap fondo("C:/Users/Sebastian/Pictures/dragon ball imagenes/menu.jpg");
-    QPixmap fondoEscalado = fondo.scaled(screenWidth, screenHeight, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
-    QGraphicsPixmapItem* fondoItem = scene->addPixmap(fondoEscalado);
+    if(fondo.isNull()) {
+        qDebug() << "Error: No se pudo cargar la imagen del menú";
+        fondo = QPixmap(screenWidth, screenHeight);
+        fondo.fill(Qt::darkBlue);
+    }
+    QGraphicsPixmapItem* fondoItem = escenaMenu->addPixmap(fondo.scaled(screenWidth, screenHeight, Qt::KeepAspectRatioByExpanding));
     fondoItem->setZValue(-1);
     fondoItem->setPos(0, 0);
 
-    // --- BOTONES CON ESTILO ---
     int btnAncho = 200;
     int btnAlto = 50;
     int spacing = 60;
@@ -37,12 +46,13 @@ MainWindow::MainWindow(QWidget *parent)
     btnJugar = new QPushButton("JUGAR", this);
     btnSalir = new QPushButton("SALIR", this);
 
-    // Estilo
     QString estilo = "QPushButton {"
                      "background-color: rgba(255, 255, 255, 180);"
                      "color: black;"
                      "font: bold 20px 'Arial';"
                      "border: 2px solid black;"
+                     "border-radius: 10px;"
+                     "padding: 5px;"
                      "}"
                      "QPushButton:hover {"
                      "background-color: rgba(0, 0, 0, 150);"
@@ -55,7 +65,6 @@ MainWindow::MainWindow(QWidget *parent)
     btnJugar->resize(btnAncho, btnAlto);
     btnSalir->resize(btnAncho, btnAlto);
 
-    // Posicionarlos horizontalmente y centrarlos
     int totalWidth = btnAncho * 2 + spacing;
     int startX = (screenWidth - totalWidth) / 2;
     int y = screenHeight * 0.85;
@@ -63,35 +72,53 @@ MainWindow::MainWindow(QWidget *parent)
     btnJugar->move(startX, y);
     btnSalir->move(startX + btnAncho + spacing, y);
 
-    // Conectar botones
     connect(btnSalir, &QPushButton::clicked, this, &MainWindow::close);
     connect(btnJugar, &QPushButton::clicked, this, &MainWindow::iniciarJuego);
 
-    // Pantalla completa
     this->showFullScreen();
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
 }
 
 void MainWindow::iniciarJuego()
 {
-    // Ocultar los botones del menú
     btnJugar->hide();
     btnSalir->hide();
 
-    // Eliminar la escena del menú
-    delete scene;
-
-    // Obtener tamaño de pantalla
     QRect screenSize = QGuiApplication::primaryScreen()->geometry();
-    int width = screenSize.width();
-    int height = screenSize.height();
+    escenaJuego = new Nivel1(screenSize.width(), screenSize.height(), this);
 
-    // Crear nivel1 y mostrarlo
-    escenaNivel1 = new Nivel1(width, height);
-    ui->graphicsView->setScene(escenaNivel1);
+    ui->graphicsView->setScene(escenaJuego);
+    ui->graphicsView->setFocusPolicy(Qt::NoFocus);
+
+    connect(escenaJuego, &Nivel1::enemigoEliminado, this, &MainWindow::manejarVictoria);
+}
+
+void MainWindow::manejarVictoria()
+{
+
+    volverAlMenu();
+}
+
+void MainWindow::volverAlMenu()
+{
+    limpiarEscenaJuego();
+    configurarMenu();
+    btnJugar->show();
+    btnSalir->show();
+}
+
+void MainWindow::limpiarEscenaJuego()
+{
+    if(escenaJuego) {
+        escenaJuego->clear();
+        delete escenaJuego;
+        escenaJuego = nullptr;
+    }
+}
+
+MainWindow::~MainWindow()
+{
+    delete escenaMenu;
+    limpiarEscenaJuego();
+    delete ui;
 }
 

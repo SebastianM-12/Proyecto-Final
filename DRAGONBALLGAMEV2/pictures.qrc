@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>../sprite/goku.png</file>
+        <file>../sprite/ki.png</file>
+        <file>../sprite/chaoz.png</file>
+    </qresource>
+</RCC>
