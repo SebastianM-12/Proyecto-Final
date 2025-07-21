@@ -4,9 +4,16 @@
 #include <QObject>
 #include <QGraphicsItem>
 #include <QPixmap>
-#include <QPainter>
 #include <QTimer>
-#include "atributos.h"
+#include <QPainter>
+#include <QPainterPath>
+
+class Nivel1;
+
+enum TipoEnemigo {
+    Chaoz,
+    Ten
+};
 
 class Enemigo : public QObject, public QGraphicsItem
 {
@@ -14,14 +21,23 @@ class Enemigo : public QObject, public QGraphicsItem
     Q_INTERFACES(QGraphicsItem)
 
 public:
-    explicit Enemigo(QObject *parent = nullptr);
+    explicit Enemigo(TipoEnemigo tipo = Chaoz, QObject* parent = nullptr);
     ~Enemigo();
 
-    void recibirDano(int cantidad);
+    QRectF boundingRect() const override;
+    QPainterPath shape() const override;
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*) override;
+
+    void setNivel(Nivel1* n);
+    void recortarSprite(int x, int y, int w, int h);
+    void setVelocidadX(int v);
+    int getVelocidadX() const;
+    void recibirDanio(int cantidad);
+    bool estaVivo() const;
     int getVida() const;
 
-    QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
+protected:
+    void advance(int step) override;
 
 signals:
     void enemigoDerrotado();
@@ -30,20 +46,22 @@ private slots:
     void moverAutomaticamente();
 
 private:
-    void recortarSprite(int x, int y, int w, int h);
-
+    TipoEnemigo tipoEnemigo;
+    int escalaVisual;
     QPixmap original;
     QPixmap pixmap;
     int anchoRecorte;
     int altoRecorte;
-    int escalaVisual;
-    int vida;
-    QTimer *movimientoTimer;
+
+    QTimer* movimientoTimer;
     float velY;
     bool enElAire;
     bool moviendoDerecha;
     bool mirandoDerecha;
-    Atributos *barraVida;
+    int velocidadX;
+    int vida;
+
+    Nivel1* nivel;
 };
 
 #endif // ENEMIGO_H

@@ -2,26 +2,52 @@
 #define NIVEL1_H
 
 #include <QGraphicsScene>
+#include <QGraphicsTextItem>
+#include <QTimer>
 #include "goku.h"
 #include "enemigo.h"
+#include "atributos.h"
 
 class Nivel1 : public QGraphicsScene
 {
     Q_OBJECT
+
 public:
-    Nivel1(int width, int height, QObject* parent = nullptr);
+    explicit Nivel1(int width, int height, QObject* parent = nullptr);
+    goku* getGoku() const;
+    void reducirVidaGoku();
+
+    Atributo* vidaGoku;
+    Atributo* vidaEnemigo;
 
 signals:
-    void enemigoEliminado();
+    void tiempoAgotado();
+    void enemigoDerrotado();
+
+public slots:
+    void avanzarAFaseSiguiente();
+
+private slots:
+    void actualizarTemporizador();
+    void lanzarAtaquesAmbientales();
 
 private:
-    void configurarEscena(int width, int height);
+    void configurarFondo(int width, int height);
+    void configurarTemporizador();
+    void configurarFase();
+    void limpiarFaseActual();
+    void crearEnemigo(TipoEnemigo tipo);
+    void eliminarEnemigo();
 
     goku* m_goku;
     Enemigo* m_enemigo;
-    QTimer* m_colisionTimer;
+    QGraphicsTextItem* textoTemporizador;
+    QTimer* temporizador;
+    int tiempoRestante;
+    int faseActual;
 
-    const int m_distanciaDano = 50;
+    int altoEscena;
+    int anchoEscena;
 };
 
 #endif // NIVEL1_H

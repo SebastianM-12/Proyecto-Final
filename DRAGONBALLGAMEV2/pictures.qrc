@@ -3,5 +3,6 @@
         <file>../sprite/goku.png</file>
         <file>../sprite/ki.png</file>
         <file>../sprite/chaoz.png</file>
+        <file>../sprite/ten.png</file>
     </qresource>
 </RCC>

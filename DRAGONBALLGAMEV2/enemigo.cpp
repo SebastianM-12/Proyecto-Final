@@ -1,29 +1,43 @@
 #include "enemigo.h"
+#include "ataques.h"
+#include "nivel1.h"
+#include "goku.h"
+#include <QTimer>
 #include <QDebug>
 #include <QRandomGenerator>
-#include <QGraphicsScene>
 #include <QTransform>
+#include <QPainterPath>
 
-Enemigo::Enemigo(QObject *parent)
+Enemigo::Enemigo(TipoEnemigo tipo, QObject *parent)
     : QObject(parent),
-    original(":/sprite/chaoz.png"),
-    anchoRecorte(0),
-    altoRecorte(0),
-    escalaVisual(120),
-    vida(20),
+    tipoEnemigo(tipo),
     movimientoTimer(new QTimer(this)),
     velY(0),
     enElAire(false),
     moviendoDerecha(true),
-    mirandoDerecha(true),  // Inicialmente mirando a la derecha
-    barraVida(new Atributos(vida, this))
+    mirandoDerecha(true),
+    velocidadX(8),
+    nivel(nullptr)
 {
-    if(original.isNull()) {
+    if (tipo == Chaoz) {
+        original = QPixmap(":/sprite/chaoz.png");
+        vida = 30;
+        escalaVisual = 120;
+    } else if (tipo == Ten) {
+        QPixmap tenRaw(":/sprite/ten.png");
+        original = tenRaw.copy(10, 0, tenRaw.width() - 10, tenRaw.height());
+        vida = 50;
+        escalaVisual = 90;
+    }
+
+    if (original.isNull()) {
         qDebug() << "Error: No se pudo cargar sprite del enemigo";
         return;
     }
 
-    recortarSprite(0, 0, 100, 100); // Sprite inicial
+    recortarSprite(0, 0, 100, 100);
+    setFlag(QGraphicsItem::ItemIsFocusable);
+    setFocus();
 
     connect(movimientoTimer, &QTimer::timeout, this, &Enemigo::moverAutomaticamente);
     movimientoTimer->start(20);
@@ -34,23 +48,7 @@ Enemigo::~Enemigo()
     movimientoTimer->stop();
 }
 
-void Enemigo::recibirDano(int cantidad)
-{
-    vida = qMax(0, vida - cantidad);
-    barraVida->setVida(vida);
-    qDebug() << "Enemigo recibió daño. Vida:" << vida;
-
-    if(vida <= 0) {
-        emit enemigoDerrotado();
-        if(scene()) scene()->removeItem(this);
-        deleteLater();
-    }
-}
-
-int Enemigo::getVida() const
-{
-    return vida;
-}
+void Enemigo::setNivel(Nivel1* n) { nivel = n; }
 
 void Enemigo::recortarSprite(int x, int y, int w, int h)
 {
@@ -62,67 +60,91 @@ void Enemigo::recortarSprite(int x, int y, int w, int h)
 
 QRectF Enemigo::boundingRect() const
 {
-    return QRectF(-escalaVisual/2, -escalaVisual/2, escalaVisual, escalaVisual);
+    return QRectF(-escalaVisual / 2, -escalaVisual / 2, escalaVisual, escalaVisual);
 }
 
-void Enemigo::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+QPainterPath Enemigo::shape() const
 {
-    Q_UNUSED(option);
-    Q_UNUSED(widget);
+    QPainterPath path;
+    QRectF areaReducida = boundingRect().adjusted(15, 15, -15, -15);
+    path.addRect(areaReducida);
+    return path;
+}
 
+void Enemigo::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
+    if (pixmap.isNull()) return;
     QPixmap escalado = pixmap.scaled(escalaVisual, escalaVisual, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-
-    if(mirandoDerecha) {  // Cambiado el condicional
-        // Voltear horizontalmente cuando mira a la derecha
-        painter->drawPixmap(-escalaVisual/2, -escalaVisual/2,
-                            escalado.transformed(QTransform().scale(-1, 1)));
-    } else {
-        // Dibujar normal cuando mira a la izquierda
-        painter->drawPixmap(-escalaVisual/2, -escalaVisual/2, escalado);
-    }
+    if (mirandoDerecha)
+        painter->drawPixmap(-escalaVisual / 2, -escalaVisual / 2, escalado.transformed(QTransform().scale(-1, 1)));
+    else
+        painter->drawPixmap(-escalaVisual / 2, -escalaVisual / 2, escalado);
 }
 
 void Enemigo::moverAutomaticamente()
 {
-    if(vida <= 0) return;
-
     const float limiteIzquierdo = 200;
     const float limiteDerecho = 1420;
-    const float suelo = 800;
-    const int velocidadX = 8;
+    const float suelo = 850;
 
-    // Cambiar dirección al llegar a los límites
-    if((x() + escalaVisual/2) >= limiteDerecho) {
-        moviendoDerecha = false;
-    } else if((x() - escalaVisual/2) <= limiteIzquierdo) {
-        moviendoDerecha = true;
-    }
+    if ((x() + escalaVisual / 2) >= limiteDerecho) moviendoDerecha = false;
+    else if ((x() - escalaVisual / 2) <= limiteIzquierdo) moviendoDerecha = true;
 
-    // CORRECCIÓN: Sincronizar la dirección visual con el movimiento
     mirandoDerecha = moviendoDerecha;
-
-    // Movimiento horizontal
     moveBy(moviendoDerecha ? velocidadX : -velocidadX, 0);
 
-    // Gravedad
     velY += 0.5;
     moveBy(0, velY);
 
-    // Colisión con el suelo
-    if(y() + escalaVisual/2 >= suelo) {
-        setY(suelo - escalaVisual/2);
+    if (y() + escalaVisual / 2 >= suelo) {
+        setY(suelo - escalaVisual / 2);
         velY = 0;
         enElAire = false;
-        recortarSprite(0, 0, 100, 100); // Sprite normal
+        recortarSprite(0, 0, 100, 100);
     } else {
         enElAire = true;
-        recortarSprite(100, 200, 100, 100); // Sprite en aire
+        recortarSprite(100, 200, 100, 100);
     }
 
-    // Salto aleatorio
-    if(!enElAire && QRandomGenerator::global()->bounded(100) < 3) {
+    if (!enElAire && QRandomGenerator::global()->bounded(100) < 3) {
         velY = -10.0;
         enElAire = true;
-        recortarSprite(0, 200, 100, 100); // Sprite de salto
+        recortarSprite(0, 200, 100, 100);
+    }
+
+    if (QRandomGenerator::global()->bounded(1000) < 2) {
+        Ataque::lanzarDash(this);
+    }
+
+    if (nivel && nivel->getGoku() && collidesWithItem(nivel->getGoku())) {
+        nivel->getGoku()->recibirDanio(1);
     }
 }
+
+void Enemigo::advance(int step)
+{
+    if (!step) return;
+    moverAutomaticamente();
+}
+
+void Enemigo::setVelocidadX(int v) { velocidadX = v; }
+int Enemigo::getVelocidadX() const { return velocidadX; }
+
+void Enemigo::recibirDanio(int cantidad)
+{
+    vida -= cantidad;
+    qDebug() << "Enemigo recibió daño. Vida restante:" << vida;
+
+    if (nivel && nivel->vidaEnemigo)
+        nivel->vidaEnemigo->reducir();
+
+    if (vida <= 0) {
+        qDebug() << "Enemigo derrotado";
+        if (scene()) scene()->removeItem(this);
+        emit enemigoDerrotado();
+        deleteLater();
+    }
+}
+
+bool Enemigo::estaVivo() const { return vida > 0; }
+int Enemigo::getVida() const { return vida; }

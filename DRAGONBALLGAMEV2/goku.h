@@ -8,7 +8,8 @@
 #include <QKeyEvent>
 #include <QTimer>
 #include <QSet>
-#include "atributos.h"
+
+class Nivel1;
 
 class goku : public QObject, public QGraphicsItem
 {
@@ -20,41 +21,46 @@ public:
     ~goku();
 
     QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override;
 
-    void recibirDano(int cantidad);
+    void recibirDanio(int cantidad);
+    void setVida(int v);
     int getVida() const;
+    void setNivel(Nivel1* nivel);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
+    void focusInEvent(QFocusEvent *) override;
+    void mousePressEvent(QGraphicsSceneMouseEvent *) override;
 
 private slots:
     void aplicarGravedad();
     void moverEnAire();
-    void lanzarAtaque();
+    void habilitarSlotDisparo(int slot);
 
 private:
     void recortarSprite(int x, int y, int w, int h);
-    void actualizarBarraVida();
+    int obtenerSlotLibre();
 
-    // 🔄 ORDEN CORRECTO según constructor:
     QPixmap original;
-    int vida;
+    QPixmap pixmap;
     int escalaVisual;
     float velY;
     bool enElAire;
     bool mirandoIzquierda;
-    QTimer* gravedadTimer;
-    QTimer* movimientoTimer;
-    Atributos* barraVida;
-    QPixmap pixmap;
-    int anchoRecorte;
-    int altoRecorte;
-    QSet<int> teclasPresionadas;
 
-    static int contadorAtaques;
-    static bool enEnfriamiento;
+    QSet<int> teclasPresionadas;
+    QTimer *gravedadTimer;
+    QTimer *movimientoTimer;
+
+    static const int MAX_KI = 5;
+    bool slotsDisparo[MAX_KI];
+
+    int vida;
+    Nivel1* nivel;
+
+    bool puedeRecibirDanio;
 };
 
 #endif // GOKU_H

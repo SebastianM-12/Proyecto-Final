@@ -12,6 +12,7 @@ CONFIG += c++17
 SOURCES += \
     ataques.cpp \
     atributos.cpp \
+    customgraphicsview.cpp \
     enemigo.cpp \
     goku.cpp \
     main.cpp \
@@ -21,6 +22,7 @@ SOURCES += \
 HEADERS += \
     ataques.h \
     atributos.h \
+    customgraphicsview.h \
     enemigo.h \
     goku.h \
     mainwindow.h \

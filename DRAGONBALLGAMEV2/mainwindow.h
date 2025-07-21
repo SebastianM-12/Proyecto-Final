@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include <QGraphicsScene>
 #include <QPushButton>
-#include <QMessageBox>
 #include "nivel1.h"
 
 QT_BEGIN_NAMESPACE
@@ -20,19 +19,21 @@ public:
     ~MainWindow();
 
 private slots:
-    void iniciarJuego();
-    void manejarVictoria();
+    void iniciarJuegoNivel1();
+    void iniciarJuegoNivel2();
     void volverAlMenu();
+    void asignarFocoAGoku();
 
 private:
     void configurarMenu();
     void limpiarEscenaJuego();
-    void configurarBotones();
+    QString estiloBotones() const;
 
     Ui::MainWindow *ui;
     QGraphicsScene* escenaMenu;
     Nivel1* escenaJuego;
     QPushButton* btnJugar;
+    QPushButton* btnNivel2;
     QPushButton* btnSalir;
 };
 

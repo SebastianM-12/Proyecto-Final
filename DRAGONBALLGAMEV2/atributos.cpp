@@ -1,44 +1,61 @@
 #include "atributos.h"
+#include <QBrush>
+#include <QGraphicsScene>
 
-Atributos::Atributos(int maxVida, QGraphicsItem *parent)
-    : QGraphicsItem(parent), vidaMaxima(maxVida), vidaActual(maxVida), parentItem(parent)
+Atributo::Atributo(int maximo, int inicioX, int inicioY, QColor color, QGraphicsScene* escena)
+    : vidaActual(maximo), vidaMaxima(maximo), escena(escena), color(color),
+    inicioX(inicioX), inicioY(inicioY)
 {
-    // La barra de vida se posicionará encima del personaje
-    setZValue(10); // Asegurar que se dibuje encima de otros elementos
+    for (int i = 0; i < vidaMaxima; ++i) {
+        QGraphicsRectItem* bloque = new QGraphicsRectItem(inicioX + i * 12, inicioY, 10, 20);
+        bloque->setBrush(QBrush(color));
+        bloque->setZValue(3);
+        escena->addItem(bloque);
+        barra.push_back(bloque);
+    }
 }
 
-QRectF Atributos::boundingRect() const
+void Atributo::reducir(int cantidad)
 {
-    return QRectF(-30, -50, 60, 10);
+    while (cantidad-- > 0 && vidaActual > 0) {
+        vidaActual--;
+        if (!barra.empty()) {
+            QGraphicsRectItem* ultimo = barra.back();
+            escena->removeItem(ultimo);
+            delete ultimo;
+            barra.pop_back();
+        }
+    }
 }
 
-void Atributos::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+void Atributo::reiniciar()
 {
-    // Dibujar fondo de la barra (rojo)
-    painter->setBrush(Qt::red);
-    painter->drawRect(-30, -50, 60, 10);
+    liberar();  // Primero limpia
+    vidaActual = vidaMaxima;
 
-    // Dibujar vida actual (verde)
-    float porcentajeVida = (float)vidaActual / vidaMaxima;
-    painter->setBrush(Qt::green);
-    painter->drawRect(-30, -50, 60 * porcentajeVida, 10);
-
-    // Dibujar borde
-    painter->setPen(Qt::black);
-    painter->setBrush(Qt::NoBrush);
-    painter->drawRect(-30, -50, 60, 10);
+    for (int i = 0; i < vidaMaxima; ++i) {
+        QGraphicsRectItem* bloque = new QGraphicsRectItem(inicioX + i * 12, inicioY, 10, 20);
+        bloque->setBrush(QBrush(color));
+        bloque->setZValue(3);
+        escena->addItem(bloque);
+        barra.push_back(bloque);
+    }
 }
 
-void Atributos::setVida(int nuevaVida)
+void Atributo::liberar()
 {
-    vidaActual = nuevaVida;
-    if(vidaActual < 0) vidaActual = 0;
-    if(vidaActual > vidaMaxima) vidaActual = vidaMaxima;
-    update();
+    for (QGraphicsRectItem* item : barra) {
+        escena->removeItem(item);
+        delete item;
+    }
+    barra.clear();
 }
 
-int Atributos::getVida() const
-{
+int Atributo::getVidaActual() const {
     return vidaActual;
+}
+
+int Atributo::getVidaMaxima() const {
+    return vidaMaxima;
 }
 

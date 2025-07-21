@@ -1,24 +1,27 @@
 #ifndef ATRIBUTOS_H
 #define ATRIBUTOS_H
 
-#include <QGraphicsItem>
-#include <QPainter>
+#include <QGraphicsRectItem>
+#include <vector>
 
-class Atributos : public QGraphicsItem
-{
+class Atributo {
 public:
-    Atributos(int maxVida, QGraphicsItem *parent = nullptr);
+    Atributo(int maximo, int inicioX, int inicioY, QColor color, QGraphicsScene* escena);
 
-    QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
-
-    void setVida(int nuevaVida);
-    int getVida() const;
+    void reducir(int cantidad = 1);
+    void reiniciar();
+    void liberar();
+    int getVidaActual() const;
+    int getVidaMaxima() const;
 
 private:
-    int vidaMaxima;
     int vidaActual;
-    QGraphicsItem *parentItem;
+    int vidaMaxima;
+    std::vector<QGraphicsRectItem*> barra;
+    QGraphicsScene* escena;
+    QColor color;
+    int inicioX;
+    int inicioY;
 };
 
-#endif // ATRIBUTOS_H
+#endif // ATRIBUTO_H
